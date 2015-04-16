@@ -1,7 +1,7 @@
 package game;
 
 /**
- * Created by Patrick on 12/04/2015.
+ * @author wumpus
  */
 public enum CaveAction {
     TREASURE, PIT, WUMPUS, SUPERBAT, EXIT;
