@@ -28,7 +28,8 @@ public class Game implements IConstants {
         while (true) {
             for (Player player : players) {
                 System.out.println();
-                if (players.size() > 1) System.out.println("It is " + player.toString() + "'s turn");
+                if (players.size() > 1)
+                    System.out.println("It is " + player.toString() + "'s turn");       // only print player's name if more than single player
                 turn(player);
                 player.incrementMovesMade();
                 if (player.isGameOver()) break gameFlow;
@@ -54,7 +55,7 @@ public class Game implements IConstants {
         }
 
         // print possible directions
-        System.out.println("You are in cave number " + (player.getLocation() + 1) + "!");
+        player.feedBack("You are in cave number " + (player.getLocation() + 1) + "!");
 
         ArrayList<Integer> possibilities = new ArrayList<>();
         Set<CaveAction> adjacent = new HashSet<>();
@@ -69,45 +70,45 @@ public class Game implements IConstants {
         }
 
         for (CaveAction action : adjacent) {
-            if (action == CaveAction.TREASURE) System.out.println("There is a sense of glittering...");
-            if (action == CaveAction.PIT) System.out.println("You can feel a light breeze...");
-            if (action == CaveAction.WUMPUS) System.out.println("There is a strong stench...");
+            if (action == CaveAction.TREASURE) player.feedBack("There is a sense of glittering...");
+            if (action == CaveAction.PIT) player.feedBack("You can feel a light breeze...");
+            if (action == CaveAction.WUMPUS) player.feedBack("There is a strong stench...");
         }
 
-        System.out.print("You can move to caves: ");
+        String feedback = "You can move to caves: ";
         for (int i = 0; i < possibilities.size(); i++) {
-            System.out.print(possibilities.get(i) + 1);
-            if (i < possibilities.size() - 1) System.out.print(", ");
+            feedback += (possibilities.get(i) + 1);
+            if (i < possibilities.size() - 1) feedback += ", ";
         }
-        System.out.println();
+        player.feedBack(feedback);
 
         Scanner in = new Scanner(System.in);
 
         // check shooting
         if (player.getArrows() > 0) {
-            System.out.println("Would you like to shoot an arrow? (y/n)");
+            player.feedBack("Would you like to shoot an arrow? (y/n)");
             while (true) {
                 try {
-                    String line = in.nextLine();
+                    String line = player.getInput("");
                     if (line.equals("n")) break;
                     if (line.equals("y")) {
-                        System.out.println("Which cave would you like to shoot into? If you know what I mean.");
+                        player.feedBack("Which cave would you like to shoot into? If you know what I mean.");
                         int aim;
                         while (!possibilities.contains(aim = Integer.parseInt(in.nextLine()) - 1)) {
-                            System.out.println("Please enter a valid cave number!");
+                            player.feedBack("Please enter a valid cave number!");
                         }
                         if (!caveSystem[aim].hasNoActions() && caveSystem[aim].contains(CaveAction.WUMPUS)) {
-                            System.out.println("Congratulations, you killed the Wumpus!");
+                            player.feedBack("Congratulations, you killed the Wumpus!");
                             player.setWumpusSlain(true);
                             caveSystem[aim].removeAction(CaveAction.WUMPUS);
                         } else {
-                            System.out.println("You missed the Wumpus... It has been disturbed and has moved location.");
+                            player.feedBack("You missed the Wumpus... It has been disturbed and has moved location.");
                             // delete the wumpus from actions
                             for (int i = 0; i < NUMBER_OF_CAVES; i++) {
                                 if (caveSystem[i].contains(CaveAction.WUMPUS)) {
                                     caveSystem[i].removeAction(CaveAction.WUMPUS);
                                     if (i == player.getLocation()) {
-                                        System.out.println("He has moved into your cave!");
+                                        player.feedBack("He has moved into your cave!");
                                     }
                                 }
                             }
@@ -120,19 +121,19 @@ public class Game implements IConstants {
                         return;
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("You fucking stupid person put in a fucking number.");
+                    player.feedBack("You fucking stupid person put in a fucking number.");
                 }
             }
         }
 
         // check movement
-        System.out.println("Please enter the number of the cave you would like to move to: ");
+        player.feedBack("Please enter the number of the cave you would like to move to: ");
         int nextCave = -1;
         do {
             try {
-                nextCave = Integer.parseInt(in.nextLine()) - 1;
+                nextCave = Integer.parseInt(player.getInput("")) - 1;
             } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number!");
+                player.feedBack("Please enter a valid number!");
             }
         } while (!possibilities.contains(nextCave));
 
@@ -160,7 +161,12 @@ public class Game implements IConstants {
         String answer;
         do {
             System.out.println("What is your name?");
-            players.add(new Player(in.nextLine()));
+            String name = in.nextLine();
+            if (name.equalsIgnoreCase("AI")) {
+                players.add(new AIPlayer(name + (players.size() + 1)));
+            } else {
+                players.add(new KeyboardPlayer(name));
+            }
             System.out.println("Would you like to add more players? (y/n)");
             answer = in.nextLine();
             while (!answer.equals("y") && !answer.equals("n")) {

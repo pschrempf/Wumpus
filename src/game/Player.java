@@ -3,7 +3,7 @@ package game;
 /**
  * @author wumpus
  */
-public class Player implements IConstants {
+public abstract class Player implements IConstants {
     private String name;
     private int location;
     private int arrows;
@@ -24,13 +24,17 @@ public class Player implements IConstants {
         Game.dropPlayer(this);
     }
 
+    public abstract void feedBack(String feedback);
+
+    public abstract String getInput(String prompt);
+
     public String getGameStatisics() {
         StringBuilder stats = new StringBuilder();
         stats.append(name + ":\n");
         stats.append("\tExited: " + exited + "\n");
         stats.append("\tTreasure collected: " + hasTreasure + "\n");
         stats.append("\tWumpus slain: " + wumpusSlain + "\n");
-        stats.append("\tArrow left: " + arrows + "\n");
+        stats.append("\tArrows left: " + arrows + "\n");
         stats.append("\tMoves made: " + movesMade + "\n");
         return stats.toString();
     }
