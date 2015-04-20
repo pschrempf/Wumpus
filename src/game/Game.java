@@ -10,20 +10,11 @@ public class Game implements IConstants {
     static boolean[][] graph;
     static Cave[] caveSystem;
     static ArrayList<Player> players;
+	public static boolean isFirstPlayer;
     static Scanner consoleReader;
 
     public static void main(String[] args) {
         init();
-
-        /*System.out.println("Adjacency matrix:");
-        for (int i = 0; i < graph.length; i++) {
-            for (int j = 0; j < graph.length; j++) {
-                if (graph[i][j]) System.out.print("X");
-                else System.out.print("O");
-                System.out.print(" ");
-            }
-            System.out.println();
-        }*/
 
         gameFlow:
         while (true) {
