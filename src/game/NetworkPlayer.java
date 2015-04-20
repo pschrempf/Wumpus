@@ -462,13 +462,13 @@ public class NetworkPlayer extends Player implements IConstants {
 	}
 
 	@Override
-	public void feedBack(Code code, String feedback) {
+	public void feedBack(String feedback) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public String getInput(Code code, String prompt) {
+	public String getInput(String prompt) {
 		// TODO Auto-generated method stub
 		return null;
 	}
