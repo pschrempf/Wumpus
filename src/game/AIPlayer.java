@@ -43,8 +43,8 @@ public class AIPlayer extends Player {
                 msg = "There is a strong stench...";
                 break;
             case EXIT_CODE:
-                exitLocation
-                msg = "You have reached the exit.";
+               // exitLocation
+               // msg = "You have reached the exit.";
                 if (hasTreasure()) {
                     msg += "\nAs you have collected the treasure you have exited the cave! Well Done!";
                     setGameOver(true);
