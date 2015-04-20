@@ -270,7 +270,7 @@ public class Game implements IConstants {
                     }
                 }
                 matrixFeedback = matrixFeedback.substring(0, matrixFeedback.length() - 1);
-                players.get(1).feedBack(matrixFeedback + "|");
+                players.get(1).feedBack(matrixFeedback + "-");
 
                 String caveFeedback = "";
                 for (int i = 0; i < caveSystem.length; i++) {
@@ -279,8 +279,9 @@ public class Game implements IConstants {
                     }
                     if (caveSystem[i].getActions().size() > 0) {
                         caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
-                        caveFeedback += ";";
                     }
+                    caveFeedback += ";";
+                    
 
                 }
                 caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
