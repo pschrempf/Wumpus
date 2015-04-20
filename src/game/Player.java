@@ -24,9 +24,9 @@ public abstract class Player implements IConstants {
         Game.dropPlayer(this);
     }
 
-    public abstract void feedBack(String feedback);
+    public abstract void feedBack(Code code, String feedback);
 
-    public abstract String getInput(String prompt);
+    public abstract String getInput(Code code, String prompt);
 
     public String getGameStatisics() {
         StringBuilder stats = new StringBuilder();

@@ -12,13 +12,12 @@ public class KeyboardPlayer extends Player {
     }
 
     @Override
-    public void feedBack(String feedback) {
+    public void feedBack(Code code, String feedback) {
         System.out.println(feedback);
     }
 
     @Override
-    public String getInput(String prompt) {
-        //System.out.println(prompt);
+    public String getInput(Code code, String prompt) {
         Scanner in = new Scanner(System.in);
         return in.nextLine();
     }

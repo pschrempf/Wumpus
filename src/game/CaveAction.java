@@ -4,5 +4,5 @@ package game;
  * @author wumpus
  */
 public enum CaveAction {
-    TREASURE, PIT, WUMPUS, SUPERBAT, EXIT;
+    TREASURE, PIT, WUMPUS, SUPERBAT, EXIT
 }

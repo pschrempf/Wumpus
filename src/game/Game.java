@@ -55,7 +55,7 @@ public class Game implements IConstants {
         }
 
         // print possible directions
-        player.feedBack("You are in cave number " + (player.getLocation() + 1) + "!");
+        player.feedBack(Code.IGNORE, "You are in cave number " + (player.getLocation() + 1) + "!");
 
         ArrayList<Integer> possibilities = new ArrayList<>();
         Set<CaveAction> adjacent = new HashSet<>();
@@ -70,9 +70,9 @@ public class Game implements IConstants {
         }
 
         for (CaveAction action : adjacent) {
-            if (action == CaveAction.TREASURE) player.feedBack("There is a sense of glittering...");
-            if (action == CaveAction.PIT) player.feedBack("You can feel a light breeze...");
-            if (action == CaveAction.WUMPUS) player.feedBack("There is a strong stench...");
+            if (action == CaveAction.TREASURE) player.feedBack(Code.GLISTEN, "There is a sense of glittering...");
+            if (action == CaveAction.PIT) player.feedBack(Code.BREEZE, "You can feel a light breeze...");
+            if (action == CaveAction.WUMPUS) player.feedBack(Code.STENCH, "There is a strong stench...");
         }
 
         String feedback = "You can move to caves: ";
@@ -80,35 +80,35 @@ public class Game implements IConstants {
             feedback += (possibilities.get(i) + 1);
             if (i < possibilities.size() - 1) feedback += ", ";
         }
-        player.feedBack(feedback);
+        player.feedBack(Code.CONNECTIONS, feedback);
 
         Scanner in = new Scanner(System.in);
 
         // check shooting
         if (player.getArrows() > 0) {
-            player.feedBack("Would you like to shoot an arrow? (y/n)");
+            player.feedBack(Code.IGNORE, "Would you like to shoot an arrow? (y/n)");
             while (true) {
                 try {
-                    String line = player.getInput("");
+                    String line = player.getInput(Code.SHOTSELECTION, "");
                     if (line.equals("n")) break;
                     if (line.equals("y")) {
-                        player.feedBack("Which cave would you like to shoot into? If you know what I mean.");
+                        player.feedBack(Code.IGNORE, "Which cave would you like to shoot into? If you know what I mean.");
                         int aim;
-                        while (!possibilities.contains(aim = Integer.parseInt(in.nextLine()) - 1)) {
-                            player.feedBack("Please enter a valid cave number!");
+                        while (!possibilities.contains(aim = Integer.parseInt(player.getInput(Code.SHOOT, "")) - 1)) {
+                            player.feedBack(Code.IGNORE, "Please enter a valid cave number!");
                         }
                         if (!caveSystem[aim].hasNoActions() && caveSystem[aim].contains(CaveAction.WUMPUS)) {
-                            player.feedBack("Congratulations, you killed the Wumpus!");
+                            player.feedBack(Code.IGNORE, "Congratulations, you killed the Wumpus!");
                             player.setWumpusSlain(true);
                             caveSystem[aim].removeAction(CaveAction.WUMPUS);
                         } else {
-                            player.feedBack("You missed the Wumpus... It has been disturbed and has moved location.");
+                            player.feedBack(Code.IGNORE, "You missed the Wumpus... It has been disturbed and has moved location.");
                             // delete the wumpus from actions
                             for (int i = 0; i < NUMBER_OF_CAVES; i++) {
                                 if (caveSystem[i].contains(CaveAction.WUMPUS)) {
                                     caveSystem[i].removeAction(CaveAction.WUMPUS);
                                     if (i == player.getLocation()) {
-                                        player.feedBack("He has moved into your cave!");
+                                        player.feedBack(Code.IGNORE, "He has moved into your cave!");
                                     }
                                 }
                             }
@@ -121,22 +121,21 @@ public class Game implements IConstants {
                         return;
                     }
                 } catch (NumberFormatException e) {
-                    player.feedBack("You fucking stupid person put in a fucking number.");
+                    player.feedBack(Code.IGNORE, "You fucking stupid person put in a fucking number.");
                 }
             }
         }
 
         // check movement
-        player.feedBack("Please enter the number of the cave you would like to move to: ");
+        player.feedBack(Code.IGNORE, "Please enter the number of the cave you would like to move to: ");
         int nextCave = -1;
         do {
             try {
-                nextCave = Integer.parseInt(player.getInput("")) - 1;
+                nextCave = Integer.parseInt(player.getInput(Code.MOVE, "")) - 1;
             } catch (NumberFormatException e) {
-                player.feedBack("Please enter a valid number!");
+                player.feedBack(Code.IGNORE, "Please enter a valid number!");
             }
         } while (!possibilities.contains(nextCave));
-
 
         player.setLocation(nextCave);
     }
