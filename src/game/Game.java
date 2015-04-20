@@ -231,13 +231,14 @@ public class Game implements IConstants {
 		}
 
 		if (!isFirstPlayer && isOverNetwork) {
-			String[] graphSetup = players.get(1).getInput("graphSetup").split(";");
+			String[] parts = players.get(1).getInput("graphSetup").split("-");
+			String[] graphSetup = parts[0].split(";");
 			for (int i = 0; i < graphSetup.length; i++) {
 				String[] setupParts = graphSetup[i].split(",");
 				graph[Integer.parseInt(setupParts[0])][Integer.parseInt(setupParts[1])] = true;
 			}
 			
-			String[] caveSetup = players.get(1).getInput("caveSetup").split(";");
+			String[] caveSetup = parts[1].split(";");
 			
 			for (int i = 0; i < caveSetup.length; i++) {
 				caveSystem[i] = new Cave();
@@ -277,18 +278,21 @@ public class Game implements IConstants {
 						}
 					}
 				}
-				matrixFeedback.substring(0, matrixFeedback.length() - 1);
-				players.get(1).feedBack(matrixFeedback);
+				matrixFeedback = matrixFeedback.substring(0, matrixFeedback.length() - 1);
+				players.get(1).feedBack(matrixFeedback + "|");
 
 				String caveFeedback = "";
 				for (int i = 0; i < caveSystem.length; i++) {
 					for (int j = 0; j < caveSystem[i].getActions().size(); j++) {
 						caveFeedback += caveSystem[i].getActions().get(j) + ",";
 					}
-					caveFeedback.substring(0, caveFeedback.length() - 1);
-					caveFeedback += ";";
+					if (caveSystem[i].getActions().size() > 0) {
+						caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
+						caveFeedback += ";";
+					}
+					
 				}
-				caveFeedback.substring(0, caveFeedback.length() - 1);
+				caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
 				
 				players.get(1).feedBack(caveFeedback);
 			}
