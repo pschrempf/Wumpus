@@ -22,8 +22,6 @@ enum ChatState {
  * Class representing a player playing on the network.
  * Slightly modified code of Prof. Saleem Bhatti to fit the needs of the current program.
  * @author Prof. Saleem Bhatti
- * @see PlayerInput
- * @see Backgammon
  */
 public class NetworkPlayer extends Player implements IConstants {
 

@@ -15,11 +15,9 @@ public class Cave implements IConstants {
     public boolean executeEvents(Player player) {
         if (actions.contains(CaveAction.PIT)) {
             player.feedBack(PIT_CODE);
-            return true;
         }
         if (actions.contains(CaveAction.WUMPUS)) {
             player.feedBack(WUMPUS_CODE);
-            return true;
         }
         if (actions.contains(CaveAction.TREASURE)) {
             player.feedBack(TREASURE_CODE);
@@ -32,6 +30,7 @@ public class Cave implements IConstants {
             player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "There is a flap of wings and you are transported to a random cave!");
             Game.dropPlayer(player);
         }
+        if (player.isGameOver()) return true;
         return false;
     }
 

@@ -35,6 +35,9 @@ public class KeyboardPlayer extends Player {
                     msg += "\nPlease collect the treasure before exiting...";
                 }
                 break;
+            case CONNECTIONS_CODE:
+                msg += "You can move to the caves: " + feedback.split(PARAMETER_SEPARATOR)[1].replaceAll(",", ", ");
+                break;
             case WUMPUS_CODE:
                 msg = "The Wumpus has killed you before you could even make the slightest noise... Nice try.";
                 setGameOver(true);
