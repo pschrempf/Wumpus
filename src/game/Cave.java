@@ -14,33 +14,22 @@ public class Cave implements IConstants {
 
     public boolean executeEvents(Player player) {
         if (actions.contains(CaveAction.PIT)) {
-            player.feedBack(Code.PIT, "You fell into a pit! You asshole.");
-            player.setGameOver(true);
+            player.feedBack(PIT_CODE);
             return true;
         }
         if (actions.contains(CaveAction.WUMPUS)) {
-            player.feedBack(Code.WUMPUS, "The Wumpus has killed you before you could even make the slightest noise... Nice try.");
-            player.setGameOver(true);
+            player.feedBack(WUMPUS_CODE);
             return true;
         }
         if (actions.contains(CaveAction.TREASURE)) {
-            player.collectTreasure();
-            player.feedBack(Code.TREASURE, "You have collected the treasure!");
+            player.feedBack(TREASURE_CODE);
             actions.remove(CaveAction.TREASURE);
         }
         if (actions.contains(CaveAction.EXIT)) {
-            player.feedBack(Code.EXIT, "You have reached the exit.");
-            if (player.hasTreasure()) {
-                player.feedBack(Code.IGNORE, "As you have collected the treasure you have exited the cave! Well Done!");
-                player.setGameOver(true);
-                player.setExited(true);
-                return true;
-            } else {
-                player.feedBack(Code.IGNORE, "Please collect the treasure before exiting...");
-            }
+            player.feedBack(EXIT_CODE);
         }
         if (actions.contains(CaveAction.SUPERBAT)) {
-            player.feedBack(Code.IGNORE, "There is a flap of wings and you are transported to a random cave!");
+            player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "There is a flap of wings and you are transported to a random cave!");
             Game.dropPlayer(player);
         }
         return false;
