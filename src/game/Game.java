@@ -1,5 +1,6 @@
 package game;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -7,265 +8,329 @@ import java.util.*;
  */
 public class Game implements IConstants {
 
-    static boolean[][] graph;
-    static Cave[] caveSystem;
-    static ArrayList<Player> players;
+	static boolean[][] graph;
+	static Cave[] caveSystem;
+	static ArrayList<Player> players;
 	public static boolean isFirstPlayer;
-    static Scanner consoleReader;
+	static Scanner consoleReader;
 
-    public static void main(String[] args) {
-        init();
+	public static void main(String[] args) {
+		init();
 
-        gameFlow:
-        while (true) {
-            for (Player player : players) {
-                System.out.println();
-                if (players.size() > 1)
-                    System.out.println("It is " + player.toString() + "'s turn");       // only print player's name if more than single player
-                turn(player);
-                player.incrementMovesMade();
-                if (player.isGameOver()) break gameFlow;
-            }
-        }
+		gameFlow: while (true) {
+			for (Player player : players) {
+				System.out.println();
+				if (players.size() > 1)
+					System.out
+							.println("It is " + player.toString() + "'s turn"); // only
+																				// print
+																				// player's
+																				// name
+																				// if
+																				// more
+																				// than
+																				// single
+																				// player
+				try {
+					turn(player);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				player.incrementMovesMade();
+				if (player.isGameOver())
+					break gameFlow;
+			}
+		}
 
-        printGameSummary();
-    }
+		printGameSummary();
+	}
 
-    private static void printGameSummary() {
-        System.out.println("Game statistics: ");
+	private static void printGameSummary() {
+		System.out.println("Game statistics: ");
 
-        for (Player player : players) {
-            System.out.println(player.getGameStatisics());
-        }
-    }
+		for (Player player : players) {
+			System.out.println(player.getGameStatisics());
+		}
+	}
 
-    private static void turn(Player player) {
-        // check if player is in a specific cave
-        Cave currentCave = caveSystem[player.getLocation()];
-        if (!currentCave.hasNoActions()) {
-            if (currentCave.executeEvents(player)) return;
-        }
+	private static void turn(Player player) throws IOException {
+		// check if player is in a specific cave
+		Cave currentCave = caveSystem[player.getLocation()];
+		if (!currentCave.hasNoActions()) {
+			if (currentCave.executeEvents(player))
+				return;
+		}
 
-        // print possible directions
-        player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "You are in cave number " + (player.getLocation() + 1) + "!");
+		// print possible directions
+		player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR
+				+ "You are in cave number " + (player.getLocation() + 1) + "!");
 
-        ArrayList<Integer> possibilities = new ArrayList<>();
-        Set<CaveAction> adjacent = new HashSet<>();
+		ArrayList<Integer> possibilities = new ArrayList<>();
+		Set<CaveAction> adjacent = new HashSet<>();
 
-        for (int i = 0; i < NUMBER_OF_CAVES; i++) {
-            if ((graph[player.getLocation()][i])) {
-                possibilities.add(i);
-                if (!caveSystem[i].hasNoActions()) {
-                    adjacent.addAll(caveSystem[i].getActions());
-                }
-            }
-        }
+		for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+			if ((graph[player.getLocation()][i])) {
+				possibilities.add(i);
+				if (!caveSystem[i].hasNoActions()) {
+					adjacent.addAll(caveSystem[i].getActions());
+				}
+			}
+		}
 
-        for (CaveAction action : adjacent) {
-            if (action == CaveAction.TREASURE) player.feedBack(GLISTEN_CODE);
-            if (action == CaveAction.PIT) player.feedBack(BREEZE_CODE);
-            if (action == CaveAction.WUMPUS) player.feedBack(STENCH_CODE);
-        }
+		for (CaveAction action : adjacent) {
+			if (action == CaveAction.TREASURE)
+				player.feedBack(GLISTEN_CODE);
+			if (action == CaveAction.PIT)
+				player.feedBack(BREEZE_CODE);
+			if (action == CaveAction.WUMPUS)
+				player.feedBack(STENCH_CODE);
+		}
 
-        String feedback = "";
-        for (int i = 0; i < possibilities.size(); i++) {
-            feedback += (possibilities.get(i) + 1);
-            if (i < possibilities.size() - 1) feedback += ",";
-        }
-        player.feedBack(CONNECTIONS_CODE + PARAMETER_SEPARATOR + feedback);
+		String feedback = "";
+		for (int i = 0; i < possibilities.size(); i++) {
+			feedback += (possibilities.get(i) + 1);
+			if (i < possibilities.size() - 1)
+				feedback += ",";
+		}
+		player.feedBack(CONNECTIONS_CODE + PARAMETER_SEPARATOR + feedback);
 
-        // check shooting
-        if (player.getArrows() > 0) {
-            while (true) {
-                try {
-                    String line = player.getInput(SHOOTSELECT_CODE);
-                    if (line.equals("n")) break;
-                    if (line.equals("y")) {
-                        int aim;
-                        while (!possibilities.contains(aim = Integer.parseInt(player.getInput(SHOOT_CODE)) - 1)) {
-                            player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "Please enter a valid cave number!");
-                        }
-                        if (!caveSystem[aim].hasNoActions() && caveSystem[aim].contains(CaveAction.WUMPUS)) {
-                            player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "Congratulations, you killed the Wumpus!");
-                            player.setWumpusSlain(true);
-                            caveSystem[aim].removeAction(CaveAction.WUMPUS);
-                        } else {
-                            player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "You missed the Wumpus... It has been disturbed and has moved location.");
-                            // delete the wumpus from actions
-                            for (int i = 0; i < NUMBER_OF_CAVES; i++) {
-                                if (caveSystem[i].contains(CaveAction.WUMPUS)) {
-                                    caveSystem[i].removeAction(CaveAction.WUMPUS);
-                                    if (i == player.getLocation()) {
-                                        player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "He has moved into your cave!");
-                                    }
-                                }
-                            }
-                            // place the wumpus in a random cave
-                            Random r = new Random();
-                            int index = r.nextInt(NUMBER_OF_CAVES);
-                            caveSystem[index].addAction(CaveAction.WUMPUS);
-                        }
-                        player.shootArrow();
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "You fucking stupid person put in a fucking number.");
-                }
-            }
-        }
+		// check shooting
+		if (player.getArrows() > 0) {
+			while (true) {
+				try {
+					String line = player.getInput(SHOOTSELECT_CODE);
+					if (line.equals("n"))
+						break;
+					if (line.equals("y")) {
+						int aim;
+						while (!possibilities.contains(aim = Integer
+								.parseInt(player.getInput(SHOOT_CODE)) - 1)) {
+							player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR
+									+ "Please enter a valid cave number!");
+						}
+						if (!caveSystem[aim].hasNoActions()
+								&& caveSystem[aim].contains(CaveAction.WUMPUS)) {
+							player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR
+									+ "Congratulations, you killed the Wumpus!");
+							player.setWumpusSlain(true);
+							caveSystem[aim].removeAction(CaveAction.WUMPUS);
+						} else {
+							player.feedBack(PRINT_CODE
+									+ PARAMETER_SEPARATOR
+									+ "You missed the Wumpus... It has been disturbed and has moved location.");
+							// delete the wumpus from actions
+							for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+								if (caveSystem[i].contains(CaveAction.WUMPUS)) {
+									caveSystem[i]
+											.removeAction(CaveAction.WUMPUS);
+									if (i == player.getLocation()) {
+										player.feedBack(PRINT_CODE
+												+ PARAMETER_SEPARATOR
+												+ "He has moved into your cave!");
+									}
+								}
+							}
+							// place the wumpus in a random cave
+							Random r = new Random();
+							int index = r.nextInt(NUMBER_OF_CAVES);
+							caveSystem[index].addAction(CaveAction.WUMPUS);
+						}
+						player.shootArrow();
+						return;
+					}
+				} catch (NumberFormatException e) {
+					player.feedBack(PRINT_CODE
+							+ PARAMETER_SEPARATOR
+							+ "You fucking stupid person put in a fucking number.");
+				}
+			}
+		}
 
-        // check movement
-        int nextCave = -1;
-        do {
-            try {
-                nextCave = Integer.parseInt(player.getInput(MOVE_CODE)) - 1;
-            } catch (NumberFormatException e) {
-                player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "Please enter a valid number!");
-            }
-        } while (!possibilities.contains(nextCave));
+		// check movement
+		int nextCave = -1;
+		do {
+			try {
+				nextCave = Integer.parseInt(player.getInput(MOVE_CODE)) - 1;
+			} catch (NumberFormatException e) {
+				player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR
+						+ "Please enter a valid number!");
+			}
+		} while (!possibilities.contains(nextCave));
 
-        player.setLocation(nextCave);
-    }
+		player.setLocation(nextCave);
+	}
 
-    private static void init() {
-        System.out.println("************************************" +
-                "\n*********WUMPUS SLAYER 2015*********" +
-                "\n************************************");
-        System.out.println();
-        System.out.println("Initialising game...");
+	private static void init() {
+		System.out.println("************************************"
+				+ "\n*********WUMPUS SLAYER 2015*********"
+				+ "\n************************************");
+		System.out.println();
+		System.out.println("Initialising game...");
 
-        graph = new boolean[NUMBER_OF_CAVES][NUMBER_OF_CAVES];
-        caveSystem = new Cave[NUMBER_OF_CAVES];
-        players = new ArrayList<>();
-        consoleReader = new Scanner(System.in);
+		graph = new boolean[NUMBER_OF_CAVES][NUMBER_OF_CAVES];
+		caveSystem = new Cave[NUMBER_OF_CAVES];
+		players = new ArrayList<>();
+		consoleReader = new Scanner(System.in);
 
-        generateRandomGraph();
-        generateRandomCaves();
-        addExtraEdges();
+		generateRandomGraph();
+		generateRandomCaves();
+		addExtraEdges();
 
-        String answer;
-        do {
-            System.out.println("What is your name?");
-            String name = consoleReader.nextLine();
-            if (name.equalsIgnoreCase("AI")) {
-                players.add(new AIPlayer(name + (players.size() + 1)));
-            } else {
-                players.add(new KeyboardPlayer(name));
-            }
-            System.out.println("Would you like to add more players? (y/n)");
-            answer = consoleReader.nextLine();
-            while (!answer.equals("y") && !answer.equals("n")) {
-                System.out.println("Please enter a valid answer.");
-                answer = consoleReader.nextLine();
-            }
-        } while (!answer.equals("n"));
+		String answer;
+		// Initialising first player
+		System.out.println("What is your name?");
+		String name = consoleReader.nextLine();
+		if (name.equalsIgnoreCase("AI")) {
+			players.add(new AIPlayer(name + (players.size() + 1)));
+		} else {
+			players.add(new KeyboardPlayer(name));
+		}
 
-        System.out.println("Game initialised!");
-    }
+		System.out.println("Would you like to play over the network (y/n)?");
 
-    private static void addExtraEdges() {
-        for (int i = 0; i < caveSystem.length; i++) {
-            if (caveSystem[i].contains(CaveAction.PIT)) {
-                ArrayList<Integer> connectedCaves = new ArrayList<>();
+		answer = consoleReader.nextLine();
+		while (!answer.equals("y") && !answer.equals("n")) {
+			System.out.println("Please enter a valid answer.");
+			answer = consoleReader.nextLine();
+		}
+		if (answer.equalsIgnoreCase("y")) {
+			try {
+				players.add(NetworkPlayer.createNetworkPlayer(false));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("Would you like to add another player? (y/n)");
+			answer = consoleReader.nextLine();
+			while (!answer.equals("y") && !answer.equals("n")) {
+				System.out.println("Please enter a valid answer.");
+				answer = consoleReader.nextLine();
+			}
+			
+			System.out.println("What is your name?");
+			name = consoleReader.nextLine();
+			if (name.equalsIgnoreCase("AI")) {
+				players.add(new AIPlayer(name + (players.size() + 1)));
+			} else {
+				players.add(new KeyboardPlayer(name));
+			}
+			
+		}
 
-                for (int j = 0; j < graph[i].length; j++) {
-                    if (graph[i][j]) connectedCaves.add(j);
-                }
+		System.out.println("Game initialised!");
+	}
 
-                for (int j = 0; j < connectedCaves.size(); j++) {
-                    for (int k = 0; k < connectedCaves.size(); k++) {
-                        int x = connectedCaves.get(j);
-                        int y = connectedCaves.get(k);
-                        if (x != y) {
-                            graph[x][y] = true;
-                            graph[y][x] = true;
-                        }
-                    }
-                }
-            }
-        }
-    }
+	private static void addExtraEdges() {
+		for (int i = 0; i < caveSystem.length; i++) {
+			if (caveSystem[i].contains(CaveAction.PIT)) {
+				ArrayList<Integer> connectedCaves = new ArrayList<>();
 
-    public static void dropPlayer(Player player) {
-        Random r = new Random();
-        while (true) {
-            int index = r.nextInt(NUMBER_OF_CAVES);
-            if (caveSystem[index].hasNoActions()) {
-                player.setLocation(index);
-                break;
-            }
-        }
-    }
+				for (int j = 0; j < graph[i].length; j++) {
+					if (graph[i][j])
+						connectedCaves.add(j);
+				}
 
-    private static void generateRandomCaves() {
-        Random r = new Random();
+				for (int j = 0; j < connectedCaves.size(); j++) {
+					for (int k = 0; k < connectedCaves.size(); k++) {
+						int x = connectedCaves.get(j);
+						int y = connectedCaves.get(k);
+						if (x != y) {
+							graph[x][y] = true;
+							graph[y][x] = true;
+						}
+					}
+				}
+			}
+		}
+	}
 
-        // placing the wumpus
-        System.out.println("The Wumpus is ready to fight!");
-        caveSystem[r.nextInt(NUMBER_OF_CAVES)].addAction(CaveAction.WUMPUS);
+	public static void dropPlayer(Player player) {
+		Random r = new Random();
+		while (true) {
+			int index = r.nextInt(NUMBER_OF_CAVES);
+			if (caveSystem[index].hasNoActions()) {
+				player.setLocation(index);
+				break;
+			}
+		}
+	}
 
-        // placing the pits
-        System.out.println("The pits have been formed.");
-        int pitsPlaced = 0;
-        while (pitsPlaced < NUMBER_OF_PITS) {
-            int index = r.nextInt(NUMBER_OF_CAVES);
-            if (caveSystem[index].hasNoActions() || caveSystem[index].contains(CaveAction.WUMPUS)) {
-                if (caveSystem[index].addAction(CaveAction.PIT)) pitsPlaced++;
-            }
-        }
+	private static void generateRandomCaves() {
+		Random r = new Random();
 
-        // placing the bats
-        System.out.println("The superbats are engaged.");
-        int superBatsPlaced = 0;
-        while (superBatsPlaced < NUMBER_OF_BATS) {
-            int index = r.nextInt(NUMBER_OF_CAVES);
-            if (caveSystem[index].hasNoActions()) {
-                if (caveSystem[index].addAction(CaveAction.SUPERBAT)) superBatsPlaced++;
-            }
-        }
+		// placing the wumpus
+		System.out.println("The Wumpus is ready to fight!");
+		caveSystem[r.nextInt(NUMBER_OF_CAVES)].addAction(CaveAction.WUMPUS);
 
-        // place treasure
-        System.out.println("The treasure is hidden deep inside the cave system...");
-        while (true) {
-            int index = r.nextInt(NUMBER_OF_CAVES);
-            if (caveSystem[index].hasNoActions()) {
-                caveSystem[index].addAction(CaveAction.TREASURE);
-                break;
-            }
-        }
+		// placing the pits
+		System.out.println("The pits have been formed.");
+		int pitsPlaced = 0;
+		while (pitsPlaced < NUMBER_OF_PITS) {
+			int index = r.nextInt(NUMBER_OF_CAVES);
+			if (caveSystem[index].hasNoActions()
+					|| caveSystem[index].contains(CaveAction.WUMPUS)) {
+				if (caveSystem[index].addAction(CaveAction.PIT))
+					pitsPlaced++;
+			}
+		}
 
-        // place exit
-        System.out.println("The cave has one exit only...");
-        while (true) {
-            int index = r.nextInt(NUMBER_OF_CAVES);
-            if (caveSystem[index].hasNoActions()) {
-                caveSystem[index].addAction(CaveAction.EXIT);
-                break;
-            }
-        }
-    }
+		// placing the bats
+		System.out.println("The superbats are engaged.");
+		int superBatsPlaced = 0;
+		while (superBatsPlaced < NUMBER_OF_BATS) {
+			int index = r.nextInt(NUMBER_OF_CAVES);
+			if (caveSystem[index].hasNoActions()) {
+				if (caveSystem[index].addAction(CaveAction.SUPERBAT))
+					superBatsPlaced++;
+			}
+		}
 
-    private static void generateRandomGraph() {
-        Random r = new Random();
+		// place treasure
+		System.out
+				.println("The treasure is hidden deep inside the cave system...");
+		while (true) {
+			int index = r.nextInt(NUMBER_OF_CAVES);
+			if (caveSystem[index].hasNoActions()) {
+				caveSystem[index].addAction(CaveAction.TREASURE);
+				break;
+			}
+		}
 
-        // create cave system
-        for (int i = 0; i < NUMBER_OF_CAVES; i++) {
-            caveSystem[i] = new Cave();
-            int index;
-            do {
-                index = r.nextInt(NUMBER_OF_CAVES);
-            } while (index == i);
-            graph[i][index] = true;
-            graph[index][i] = true;
-        }
+		// place exit
+		System.out.println("The cave has one exit only...");
+		while (true) {
+			int index = r.nextInt(NUMBER_OF_CAVES);
+			if (caveSystem[index].hasNoActions()) {
+				caveSystem[index].addAction(CaveAction.EXIT);
+				break;
+			}
+		}
+	}
 
-        /*
-        // generate maximum number of connections for each cave
-        int[] maxConnections = new int[NUMBER_OF_CAVES];
-        for (int i = 0; i < maxConnections.length; i++) {
-            maxConnections[i] = r.nextInt(MAX_ADJACENT_CAVES) + 1;
-        }
-        */
-    }
+	private static void generateRandomGraph() {
+		Random r = new Random();
+
+		// create cave system
+		for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+			caveSystem[i] = new Cave();
+			int index;
+			do {
+				index = r.nextInt(NUMBER_OF_CAVES);
+			} while (index == i);
+			graph[i][index] = true;
+			graph[index][i] = true;
+		}
+
+		/*
+		 * // generate maximum number of connections for each cave int[]
+		 * maxConnections = new int[NUMBER_OF_CAVES]; for (int i = 0; i <
+		 * maxConnections.length; i++) { maxConnections[i] =
+		 * r.nextInt(MAX_ADJACENT_CAVES) + 1; }
+		 */
+	}
 }
-

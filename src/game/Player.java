@@ -1,5 +1,7 @@
 package game;
 
+import java.io.IOException;
+
 /**
  * @author wumpus
  */
@@ -26,7 +28,7 @@ public abstract class Player implements IConstants {
 
     public abstract void feedBack(String feedback);
 
-    public abstract String getInput(String prompt);
+    public abstract String getInput(String prompt) throws IOException;
 
     public String getGameStatisics() {
         StringBuilder stats = new StringBuilder();

@@ -372,11 +372,11 @@ public class NetworkPlayer extends Player implements IConstants {
 			chatting(_otherPerson + " " + _prompt + " " + line);
 	}
 
-	public void sendFeedback(String line) {
+	public void feedBack(String line) {
 		sendLine(_out, line);
 	}
 
-	public String getInput() throws IOException {
+	public String getInput(String prompt) throws IOException {
 		return recvLine(_in);
 	}
 
@@ -457,18 +457,6 @@ public class NetworkPlayer extends Player implements IConstants {
 
 		return chat;
 
-	}
-
-	@Override
-	public void feedBack(String feedback) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getInput(String prompt) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 } // NetworkPlayer
