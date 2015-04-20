@@ -23,7 +23,6 @@ public abstract class Player implements IConstants {
         wumpusSlain = false;
         exited = false;
         movesMade = 0;
-        Game.dropPlayer(this);
     }
 
     public abstract void feedBack(String feedback);

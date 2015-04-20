@@ -15,7 +15,9 @@ public class Game implements IConstants {
 	static Scanner consoleReader;
 
 	public static void main(String[] args) {
-		init();
+		try {
+			init();
+		
 
 		gameFlow: while (true) {
 			for (Player player : players) {
@@ -31,12 +33,8 @@ public class Game implements IConstants {
 																				// than
 																				// single
 																				// player
-				try {
 					turn(player);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				
 				player.incrementMovesMade();
 				if (player.isGameOver())
 					break gameFlow;
@@ -44,6 +42,10 @@ public class Game implements IConstants {
 		}
 
 		printGameSummary();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	private static void printGameSummary() {
@@ -161,7 +163,7 @@ public class Game implements IConstants {
 		player.setLocation(nextCave);
 	}
 
-	private static void init() {
+	private static void init() throws IOException {
 		System.out.println("************************************"
 				+ "\n*********WUMPUS SLAYER 2015*********"
 				+ "\n************************************");
@@ -173,9 +175,9 @@ public class Game implements IConstants {
 		players = new ArrayList<>();
 		consoleReader = new Scanner(System.in);
 
-		generateRandomGraph();
-		generateRandomCaves();
-		addExtraEdges();
+		boolean isOverNetwork = false;
+
+		// Adding players
 
 		String answer;
 		// Initialising first player
@@ -196,7 +198,11 @@ public class Game implements IConstants {
 		}
 		if (answer.equalsIgnoreCase("y")) {
 			try {
-				players.add(NetworkPlayer.createNetworkPlayer(false));
+				NetworkPlayer newNetPlayer = (NetworkPlayer) NetworkPlayer
+						.createNetworkPlayer(false);
+				players.add(newNetPlayer);
+
+				isOverNetwork = true;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -204,22 +210,92 @@ public class Game implements IConstants {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 		} else {
 			System.out.println("Would you like to add another player? (y/n)");
 			answer = consoleReader.nextLine();
-			while (!answer.equals("y") && !answer.equals("n")) {
+			while (!answer.equalsIgnoreCase("y")
+					&& !answer.equalsIgnoreCase("n")) {
 				System.out.println("Please enter a valid answer.");
 				answer = consoleReader.nextLine();
 			}
-			
-			System.out.println("What is your name?");
-			name = consoleReader.nextLine();
-			if (name.equalsIgnoreCase("AI")) {
-				players.add(new AIPlayer(name + (players.size() + 1)));
-			} else {
-				players.add(new KeyboardPlayer(name));
+			if (answer.equalsIgnoreCase("y")) {
+				System.out.println("What is your name?");
+				name = consoleReader.nextLine();
+				if (name.equalsIgnoreCase("AI")) {
+					players.add(new AIPlayer(name + (players.size() + 1)));
+				} else {
+					players.add(new KeyboardPlayer(name));
+				}
+			}
+		}
+
+		if (!isFirstPlayer && isOverNetwork) {
+			String[] graphSetup = players.get(1).getInput("graphSetup").split(";");
+			for (int i = 0; i < graphSetup.length; i++) {
+				String[] setupParts = graphSetup[i].split(",");
+				graph[Integer.parseInt(setupParts[0])][Integer.parseInt(setupParts[1])] = true;
 			}
 			
+			String[] caveSetup = players.get(1).getInput("caveSetup").split(";");
+			
+			for (int i = 0; i < caveSetup.length; i++) {
+				caveSystem[i] = new Cave();
+				String[] caveActions = caveSetup[i].split(",");
+				for (int j = 0; j < caveActions.length; j++) {
+					switch (caveActions[j].toUpperCase()) {
+					case "PIT":
+						caveSystem[i].addAction(CaveAction.PIT);
+						break;
+					case "SUPERBAT":
+						caveSystem[i].addAction(CaveAction.SUPERBAT);
+						break;
+					case "WUMPUS":
+						caveSystem[i].addAction(CaveAction.WUMPUS);
+						break;
+					case "EXIT":
+						caveSystem[i].addAction(CaveAction.EXIT);
+						break;
+					case "TREASURE":
+						caveSystem[i].addAction(CaveAction.TREASURE);
+						break;
+
+					}
+				}
+			}
+			
+		} else {
+			generateRandomGraph();
+			generateRandomCaves();
+			addExtraEdges();
+			if (isOverNetwork) {
+				String matrixFeedback = "";
+				for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+					for (int j = 0; j < NUMBER_OF_CAVES; j++) {
+						if (graph[i][j]) {
+							matrixFeedback += i + "," + j + ";";
+						}
+					}
+				}
+				matrixFeedback.substring(0, matrixFeedback.length() - 1);
+				players.get(1).feedBack(matrixFeedback);
+
+				String caveFeedback = "";
+				for (int i = 0; i < caveSystem.length; i++) {
+					for (int j = 0; j < caveSystem[i].getActions().size(); j++) {
+						caveFeedback += caveSystem[i].getActions().get(j) + ",";
+					}
+					caveFeedback.substring(0, caveFeedback.length() - 1);
+					caveFeedback += ";";
+				}
+				caveFeedback.substring(0, caveFeedback.length() - 1);
+				
+				players.get(1).feedBack(caveFeedback);
+			}
+
+		}
+		for (Player player : players) {
+			dropPlayer(player);
 		}
 
 		System.out.println("Game initialised!");
