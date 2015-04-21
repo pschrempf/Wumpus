@@ -44,6 +44,9 @@ public class Game implements IConstants {
 					}
 				}
 			}
+			if (isOverNetwork) {
+				players.get(1).feedBack(players.get(0).getMovesMade() + ";" + players.get(0).getExited() + ";");
+			}
 			System.out.print("Waiting for the opponent's status...");
 			while(enemyStatus==null){
 				System.out.println(players.get(1).getInput("lol"));
@@ -53,10 +56,6 @@ public class Game implements IConstants {
 
 			printGameSummary();
 
-			if (isOverNetwork) {
-				players.get(1).feedBack(players.get(0).getMovesMade() + ";" + players.get(0).getExited() + ";");
-			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace();
