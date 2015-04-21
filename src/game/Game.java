@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * @author wumpus
+ * Main class of the game controlling the flow of the game.
  */
 public class Game implements IConstants {
 
@@ -16,6 +16,7 @@ public class Game implements IConstants {
 
     public static void main(String[] args) {
         try {
+
             init();
 
             gameFlow:
@@ -34,12 +35,17 @@ public class Game implements IConstants {
             }
 
             printGameSummary();
+
+
         } catch (IOException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
     }
 
+    /**
+     * Prints every players summary to the console.
+     */
     private static void printGameSummary() {
         System.out.println("Game statistics: ");
 
@@ -104,14 +110,11 @@ public class Game implements IConstants {
                         }
                         if (!caveSystem[aim].hasNoActions()
                                 && caveSystem[aim].contains(CaveAction.WUMPUS)) {
-                            player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR
-                                    + "Congratulations, you killed the Wumpus!");
+                            player.feedBack(HITWUMPUS_CODE);
                             player.setWumpusSlain(true);
                             caveSystem[aim].removeAction(CaveAction.WUMPUS);
                         } else {
-                            player.feedBack(PRINT_CODE
-                                    + PARAMETER_SEPARATOR
-                                    + "You missed the Wumpus... It has been disturbed and has moved location.");
+                            player.feedBack(MISSEDWUMPUS_CODE);
                             // delete the wumpus from actions
                             for (int i = 0; i < NUMBER_OF_CAVES; i++) {
                                 if (caveSystem[i].contains(CaveAction.WUMPUS)) {
@@ -124,7 +127,7 @@ public class Game implements IConstants {
                                     }
                                 }
                             }
-                            // place the wumpus in a random cave
+                            // place the Wumpus in a random cave
                             Random r = new Random();
                             int index = r.nextInt(NUMBER_OF_CAVES);
                             caveSystem[index].addAction(CaveAction.WUMPUS);
@@ -281,8 +284,7 @@ public class Game implements IConstants {
                         caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
                     }
                     caveFeedback += ";";
-                    
-
+    
                 }
                 caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
 
@@ -293,10 +295,11 @@ public class Game implements IConstants {
         for (Player player : players) {
             dropPlayer(player);
         }
-
-        System.out.println("Game initialised!");
     }
 
+    /**
+     * Adds extra edges around pits, to make sure the game is playable.
+     */
     private static void addExtraEdges() {
         for (int i = 0; i < caveSystem.length; i++) {
             if (caveSystem[i].contains(CaveAction.PIT)) {
@@ -321,6 +324,10 @@ public class Game implements IConstants {
         }
     }
 
+    /**
+     * Drops the player in a random location in the cave system.
+     * @param player - to be placed
+     */
     public static void dropPlayer(Player player) {
         Random r = new Random();
         while (true) {
@@ -332,6 +339,9 @@ public class Game implements IConstants {
         }
     }
 
+    /**
+     * Places all the relevant CaveActions in the caves.
+     */
     private static void generateRandomCaves() {
         Random r = new Random();
 
@@ -363,8 +373,7 @@ public class Game implements IConstants {
         }
 
         // place treasure
-        System.out
-                .println("The treasure is hidden deep inside the cave system...");
+        System.out.println("The treasure is hidden deep inside the cave system...");
         while (true) {
             int index = r.nextInt(NUMBER_OF_CAVES);
             if (caveSystem[index].hasNoActions()) {
@@ -384,25 +393,88 @@ public class Game implements IConstants {
         }
     }
 
+    /**
+     * Generates a random adjacency matrix describing a connected graph.
+     */
     private static void generateRandomGraph() {
         Random r = new Random();
 
         // create cave system
-        for (int i = 0; i < NUMBER_OF_CAVES; i++) {
-            caveSystem[i] = new Cave();
-            int index;
-            do {
-                index = r.nextInt(NUMBER_OF_CAVES);
-            } while (index == i);
-            graph[i][index] = true;
-            graph[index][i] = true;
+        while (!connected(graph)) {
+            graph = new boolean[NUMBER_OF_CAVES][NUMBER_OF_CAVES];
+            for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+                caveSystem[i] = new Cave();
+                int index;
+                do {
+                    index = r.nextInt(NUMBER_OF_CAVES);
+                } while (index >= i && i != 0);
+                graph[i][index] = true;
+                graph[index][i] = true;
+                do {
+                    index = r.nextInt(NUMBER_OF_CAVES);
+                } while (index >= i && i != 0);
+                graph[i][index] = true;
+                graph[index][i] = true;
+            }
         }
 
-		/*
-         * // generate maximum number of connections for each cave int[]
-		 * maxConnections = new int[NUMBER_OF_CAVES]; for (int i = 0; i <
-		 * maxConnections.length; i++) { maxConnections[i] =
-		 * r.nextInt(MAX_ADJACENT_CAVES) + 1; }
-		 */
+        // make sure the caves are not unnecessarily connected to themselves
+        for (int i = 0; i < graph.length; i++) {
+            graph[i][i] = false;
+        }
+    }
+
+    /**
+     * Uses a breadth-first search to determine whether the graph of an adjacency matrix is connected.
+     *
+     * @param graph - adjacency matrix to be checked
+     * @return true if connected
+     */
+    private static boolean connected(boolean[][] graph) {
+        ArrayList<Integer> queue = new ArrayList<>();
+        int source = 0;
+        int[] dist = new int[NUMBER_OF_CAVES];
+        boolean[] seen = new boolean[NUMBER_OF_CAVES];
+
+        for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+            dist[i] = 999999;
+        }
+
+        dist[source] = 0;
+        queue.add(source);
+
+        mainLoop:
+        while (!queue.isEmpty()) {
+            int i = queue.remove(0);
+            for (int j = 0; j < NUMBER_OF_CAVES; j++) {
+                if (graph[i][j] && !seen[j]) {
+                    seen[j] = true;
+                    dist[j] = dist[i] + 1;
+                    queue.add(queue.size(), j);
+                }
+            }
+        }
+
+        for (int i = 0; i < dist.length; i++) {
+            if (dist[i] == 999999) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Replaces the superbats from their previous location to a randomly selected empty new cave.
+     *
+     * @param previousIndex - previous cave index
+     */
+    public static void replaceSuperBats(int previousIndex) {
+        Random r = new Random();
+        caveSystem[previousIndex].removeAction(CaveAction.SUPERBAT);
+        while (true) {
+            int index = r.nextInt(NUMBER_OF_CAVES);
+            if (caveSystem[index].hasNoActions()) {
+                if (caveSystem[index].addAction(CaveAction.SUPERBAT))
+                    break;
+            }
+        }
     }
 }

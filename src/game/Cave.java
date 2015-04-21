@@ -3,7 +3,7 @@ package game;
 import java.util.ArrayList;
 
 /**
- * @author wumpus
+ * Class representing a cave, containing the specific actions that occur in it.
  */
 public class Cave implements IConstants {
     private ArrayList<CaveAction> actions;
@@ -28,6 +28,7 @@ public class Cave implements IConstants {
         }
         if (actions.contains(CaveAction.SUPERBAT)) {
             player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR + "There is a flap of wings and you are transported to a random cave!");
+            Game.replaceSuperBats(player.getLocation());
             Game.dropPlayer(player);
         }
         if (player.isGameOver()) return true;
