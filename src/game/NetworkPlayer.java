@@ -261,7 +261,7 @@ public class NetworkPlayer extends Player implements IConstants {
 				if (l > 0)
 					line = new String(buffer, 0, l);
 			} catch (java.net.SocketTimeoutException e) {
-				//ignore
+				return null;
 			} catch (java.io.IOException e) {
 				String eName = e.getClass().getName();
 				if (eName != "java.io.InterruptedIOException") {
