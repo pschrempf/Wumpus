@@ -22,8 +22,12 @@ public class Game implements IConstants {
 			init();
 
 			gameFlow: while (true) {
-				if (isOverNetwork) {
+				if (isOverNetwork && enemyStatus==null) {
 					enemyStatus = players.get(1).getInput("status");
+					if (enemyStatus!=null) {
+						System.out.println(enemyStatus);
+						
+					}
 				}
 				for (Player player : players) {
 					if (!(player instanceof NetworkPlayer)) {
@@ -50,9 +54,8 @@ public class Game implements IConstants {
 						players.get(0).getMovesMade() + ";"
 								+ players.get(0).getExited() + ";");
 
-				System.out.print("Waiting for the opponent's status...");
+				System.out.println("Waiting for the opponent's status...");
 				while (enemyStatus == null) {
-					System.out.println(players.get(1).getInput("lol"));
 					enemyStatus = players.get(1).getInput("status");
 					Thread.sleep(100);
 				}
@@ -68,9 +71,9 @@ public class Game implements IConstants {
 					try {
 						opponentMoves = Integer.parseInt(statusParts[0]);
 
-						if (statusParts[1] == "yes") {
+						if (statusParts[1].equals("yes")) {
 							opponentWon = true;
-						} else if (statusParts[1] == "no") {
+						} else if (statusParts[1].equals("no")) {
 							opponentWon = false;
 						} else {
 							throw new Exception();
@@ -109,8 +112,6 @@ public class Game implements IConstants {
 			}
 			printGameSummary();
 		} catch (Exception e) {
-			e.printStackTrace();
-			e.printStackTrace();
 			System.out
 					.println("Oh no! A critical error has occured during runtime: "
 							+ e.getMessage());
@@ -372,7 +373,7 @@ public class Game implements IConstants {
 
 				players.get(1).feedBack(caveFeedback);
 			}
-			Thread.sleep(100);
+			Thread.sleep(250);
 		}
 		for (Player player : players) {
 			dropPlayer(player);
