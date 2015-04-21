@@ -51,6 +51,12 @@ public class KeyboardPlayer extends Player {
                 msg = "You have collected the treasure!";
                 collectTreasure();
                 break;
+            case MISSEDWUMPUS_CODE:
+                msg = "You missed the Wumpus! It has moved location...";
+                break;
+            case HITWUMPUS_CODE:
+                msg = "Congratulations! You hit the Wumpus and it died a horrible death, screaming and rolling on the floor for hours and hours on end! I hope you enjoyed it...";
+                break;
             case PRINT_CODE:
                 msg = feedback.split(PARAMETER_SEPARATOR)[1];
                 break;

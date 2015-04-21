@@ -104,14 +104,11 @@ public class Game implements IConstants {
                         }
                         if (!caveSystem[aim].hasNoActions()
                                 && caveSystem[aim].contains(CaveAction.WUMPUS)) {
-                            player.feedBack(PRINT_CODE + PARAMETER_SEPARATOR
-                                    + "Congratulations, you killed the Wumpus!");
+                            player.feedBack(HITWUMPUS_CODE);
                             player.setWumpusSlain(true);
                             caveSystem[aim].removeAction(CaveAction.WUMPUS);
                         } else {
-                            player.feedBack(PRINT_CODE
-                                    + PARAMETER_SEPARATOR
-                                    + "You missed the Wumpus... It has been disturbed and has moved location.");
+                            player.feedBack(MISSEDWUMPUS_CODE);
                             // delete the wumpus from actions
                             for (int i = 0; i < NUMBER_OF_CAVES; i++) {
                                 if (caveSystem[i].contains(CaveAction.WUMPUS)) {
@@ -124,7 +121,7 @@ public class Game implements IConstants {
                                     }
                                 }
                             }
-                            // place the wumpus in a random cave
+                            // place the Wumpus in a random cave
                             Random r = new Random();
                             int index = r.nextInt(NUMBER_OF_CAVES);
                             caveSystem[index].addAction(CaveAction.WUMPUS);
@@ -270,7 +267,7 @@ public class Game implements IConstants {
                     }
                 }
                 matrixFeedback = matrixFeedback.substring(0, matrixFeedback.length() - 1);
-                players.get(1).feedBack(matrixFeedback + "|");
+                players.get(1).feedBack(matrixFeedback + "-");
 
                 String caveFeedback = "";
                 for (int i = 0; i < caveSystem.length; i++) {
@@ -279,8 +276,9 @@ public class Game implements IConstants {
                     }
                     if (caveSystem[i].getActions().size() > 0) {
                         caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
-                        caveFeedback += ";";
                     }
+                    caveFeedback += ";";
+
 
                 }
                 caveFeedback = caveFeedback.substring(0, caveFeedback.length() - 1);
@@ -362,8 +360,7 @@ public class Game implements IConstants {
         }
 
         // place treasure
-        System.out
-                .println("The treasure is hidden deep inside the cave system...");
+        System.out.println("The treasure is hidden deep inside the cave system...");
         while (true) {
             int index = r.nextInt(NUMBER_OF_CAVES);
             if (caveSystem[index].hasNoActions()) {
@@ -392,16 +389,14 @@ public class Game implements IConstants {
             int index;
             do {
                 index = r.nextInt(NUMBER_OF_CAVES);
-            } while (index == i);
+            } while (index < i && i != 0);
+            graph[i][index] = true;
+            graph[index][i] = true;
+            do {
+                index = r.nextInt(NUMBER_OF_CAVES);
+            } while (index < i && i != 0);
             graph[i][index] = true;
             graph[index][i] = true;
         }
-
-		/*
-         * // generate maximum number of connections for each cave int[]
-		 * maxConnections = new int[NUMBER_OF_CAVES]; for (int i = 0; i <
-		 * maxConnections.length; i++) { maxConnections[i] =
-		 * r.nextInt(MAX_ADJACENT_CAVES) + 1; }
-		 */
     }
 }

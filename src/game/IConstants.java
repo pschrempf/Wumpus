@@ -7,10 +7,10 @@ public interface IConstants {
     /*
     int MAX_ADJACENT_CAVES = 5;
     */
-    int NUMBER_OF_CAVES = 10;
-    int NUMBER_OF_BATS = 1;
-    int NUMBER_OF_PITS = 1;
-    int INITIAL_ARROWS = 5;
+    int NUMBER_OF_CAVES = 100;
+    int NUMBER_OF_BATS = 2;
+    int NUMBER_OF_PITS = 5;
+    int INITIAL_ARROWS = 3;
     
 	// network constants
     final static int chatPort = 48320; // the port number to be used
@@ -36,6 +36,8 @@ public interface IConstants {
     String PIT_CODE = "PIT";
     String TREASURE_CODE = "TREASURE";
     String CONNECTIONS_CODE = "CONNECTIONS";
+    String HITWUMPUS_CODE = "HITWUMPUS";
+    String MISSEDWUMPUS_CODE = "MISSEDWUMPUS";
 
     String PRINT_CODE = "PRINT";
 
