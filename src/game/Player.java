@@ -3,17 +3,17 @@ package game;
 import java.io.IOException;
 
 /**
- * @author wumpus
+ * Superclass of all different players used by the game.
  */
 public abstract class Player implements IConstants {
-    private String name;
+    protected String name;
     private int location;
-    private int arrows;
-    private boolean hasTreasure;
-    private boolean wumpusSlain;
+    protected int arrows;
+    protected boolean hasTreasure;
+    protected boolean wumpusSlain;
     private boolean gameOver;
-    private boolean exited;
-    private int movesMade;
+    protected boolean exited;
+    protected int movesMade;
 
     public Player(String name) {
         this.name = name;

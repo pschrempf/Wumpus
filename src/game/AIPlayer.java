@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * @author wumpus
+ * Class representing an AI Player for Hunt the Wumpus.
  */
 public class AIPlayer extends Player {
 
@@ -18,6 +18,13 @@ public class AIPlayer extends Player {
     private boolean breeze;
     private boolean stench;
 
+    private static Random r;
+
+    /**
+     * Custom constructor initialising all fields.
+     *
+     * @param name
+     */
     public AIPlayer(String name) {
         super(name);
 
@@ -35,8 +42,15 @@ public class AIPlayer extends Player {
         stench = false;
         exitLocation = -1;
         wumpusLocation = -1;
+
+        r = new Random();
     }
 
+    /**
+     * Deals with all feedback from the game and stores it in the AIPlayer class appropriately.
+     *
+     * @param feedback - from game
+     */
     @Override
     public void feedBack(String feedback) {
         String identifier = feedback.split(PARAMETER_SEPARATOR)[0];
@@ -112,6 +126,12 @@ public class AIPlayer extends Player {
         System.out.println(msg);
     }
 
+    /**
+     * Gets the Input from the AIPlayer using an identifier String.
+     *
+     * @param prompt - identifier
+     * @return String containing the input from the AIPlayer
+     */
     @Override
     public String getInput(String prompt) {
         String identifier = prompt.split(PARAMETER_SEPARATOR)[0];
@@ -134,13 +154,12 @@ public class AIPlayer extends Player {
                 caves[i].removeAction(CaveAction.WUMPUS);
             }
         }
-        Random r = new Random();
 
         switch (identifier) {
             case SHOOTSELECT_CODE:
                 if (hasSlainWumpus()) return "n";
 
-                // checks if the location of the Wumpus is known
+                // checks if the location of the Wumpus can be determined
                 int wumpusCounter = 0;
                 for (int i = 0; i < caves.length; i++) {
                     if (caves[i].contains(CaveAction.WUMPUS)) {
@@ -158,7 +177,8 @@ public class AIPlayer extends Player {
                 if (stench) {
                     ArrayList<Integer> safeCaves = new ArrayList<>();
                     for (int adjacent : connections) {
-                        if (!caves[adjacent].contains(CaveAction.WUMPUS) && !caves[adjacent].contains(CaveAction.PIT)) safeCaves.add(adjacent);
+                        if (!caves[adjacent].contains(CaveAction.WUMPUS) && !caves[adjacent].contains(CaveAction.PIT))
+                            safeCaves.add(adjacent);
                     }
                     if ((connections.size() - safeCaves.size()) < 3) {
                         wumpusLocation = connections.get(r.nextInt(connections.size()));
@@ -171,13 +191,19 @@ public class AIPlayer extends Player {
                 System.out.println(wumpusLocation + 1);
                 return String.valueOf(wumpusLocation + 1);
             case MOVE_CODE:
-
-
                 glistening = false;
                 breeze = false;
                 stench = false;
                 visited[getLocation()] = true;
 
+                // find shortest path to exit if known
+                if (hasTreasure() && exitLocation != -1) {
+                    int move = findShortestExitPath();
+                    System.out.println(move + 1);
+                    return String.valueOf(move + 1);
+                }
+
+                // count new safe connections
                 ArrayList<Integer> newSafeConnections = new ArrayList<>();
                 ArrayList<Integer> safeConnections = new ArrayList<>();
                 for (int index : connections) {
@@ -186,6 +212,7 @@ public class AIPlayer extends Player {
                         safeConnections.add(index);
                     }
                 }
+
                 int move;
 
                 // if there are new safe connections move into them
@@ -195,15 +222,73 @@ public class AIPlayer extends Player {
                 // if there is a safe connection choose it
                 else if (safeConnections.size() > 0 && r.nextInt(100) > 10) {
                     move = safeConnections.get(r.nextInt(safeConnections.size()));
-                } else {
+                }
+                // else just risk a random move
+                else {
                     move = connections.get(r.nextInt(connections.size()));
                 }
+
                 System.out.println(move + 1);
                 return String.valueOf(move + 1);
         }
         return null;
     }
 
+    /**
+     * Finds the shortest path to the exit from the current location using a breadth-first search.
+     *
+     * @return Cave to move to next in direction of exit.
+     */
+    private int findShortestExitPath() {
+        ArrayList<Integer> queue = new ArrayList<>();
+        int source = getLocation();
+        int dest = exitLocation;
+        int[] dist = new int[NUMBER_OF_CAVES];
+        int[] parent = new int[NUMBER_OF_CAVES];
+        int path = dest;
+        boolean[] seen = new boolean[NUMBER_OF_CAVES];
+
+        for (int i = 0; i < NUMBER_OF_CAVES; i++) {
+            dist[i] = 999999;
+            parent[i] = -1;
+        }
+
+        dist[source] = 0;
+        queue.add(source);
+
+        // breadth first search
+        mainLoop:
+        while (!queue.isEmpty()) {
+            int i = queue.remove(0);
+            for (int j = 0; j < NUMBER_OF_CAVES; j++) {
+                if (graph[i][j] && !seen[j]) {
+                    seen[j] = true;
+                    dist[j] = dist[i] + 1;
+                    parent[j] = i;
+                    queue.add(queue.size(), j);
+                }
+            }
+        }
+
+        // gets the next cave to move to
+        int parentIndex = parent[dest];
+        while (parentIndex != source) {
+            path = parentIndex;
+            if (path == -1) {
+                ArrayList<Integer> connections = getConnections(getLocation());
+                return connections.get(r.nextInt(connections.size()));
+            }
+            parentIndex = parent[path];
+        }
+        return path;
+    }
+
+    /**
+     * Returns List of the connections to a specific cave.
+     *
+     * @param index - current cave index
+     * @return List of connections
+     */
     private ArrayList<Integer> getConnections(int index) {
         ArrayList<Integer> connections = new ArrayList<>();
         for (int i = 0; i < graph.length; i++) {

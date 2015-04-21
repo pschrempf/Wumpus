@@ -4,11 +4,8 @@ package game;
  * @author wumpus
  */
 public interface IConstants {
-    /*
-    int MAX_ADJACENT_CAVES = 5;
-    */
-    int NUMBER_OF_CAVES = 100;
-    int NUMBER_OF_BATS = 2;
+    int NUMBER_OF_CAVES = 200;
+    int NUMBER_OF_BATS = 1;
     int NUMBER_OF_PITS = 5;
     int INITIAL_ARROWS = 3;
     
@@ -28,6 +25,7 @@ public interface IConstants {
 	String READY_MESSAGE = "ready";
 	String REJECT_MESSAGE = "reject";
 
+    // player messages
     String GLISTEN_CODE = "GLISTEN";
     String BREEZE_CODE = "BREEZE";
     String STENCH_CODE = "STENCH";
