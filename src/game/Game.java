@@ -14,6 +14,7 @@ public class Game implements IConstants {
 	public static boolean isFirstPlayer;
 	static Scanner consoleReader;
 	static boolean isOverNetwork;
+	static String enemyStatus;
 
 	public static void main(String[] args) {
 		try {
@@ -22,7 +23,7 @@ public class Game implements IConstants {
 
 			gameFlow: while (true) {
 				if(isOverNetwork){
-					System.out.println(players.get(0).getInput("lol"));
+					enemyStatus = players.get(1).getInput("status");
 				}
 				for (Player player : players) {
 					if (!(player instanceof NetworkPlayer)) {
@@ -42,21 +43,24 @@ public class Game implements IConstants {
 					}
 				}
 			}
+			System.out.print("Waiting for the opponent's status...");
+			while(enemyStatus==null){
+				Thread.sleep(200);
+			}
 
 			printGameSummary();
 
 			if (isOverNetwork) {
-				players.get(0).feedBack(players.get(0).getMovesMade() + ";" + players.get(0).getExited() + ";");
-				players.get(0).feedBack(BYE_MESSAGE);
+				players.get(1).feedBack(players.get(0).getMovesMade() + ";" + players.get(0).getExited() + ";");
 			}
 			
 		} catch (Exception e) {
-			System.out
-					.println("Oh no! A critical error has occured during runtime: "
-							+ e.getMessage());
+			e.printStackTrace();
+			System.out.println("Oh no! A critical error has occured during runtime: "
+					+ e.getMessage());
 			System.out.println("The system will now exit.");
 			if (isOverNetwork) {
-				players.get(0).feedBack(ERROR_FEEDBACK);
+				players.get(1).feedBack(ERROR_FEEDBACK);
 			}
 		} 
 	}
