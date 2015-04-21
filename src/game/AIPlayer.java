@@ -257,7 +257,6 @@ public class AIPlayer extends Player {
         queue.add(source);
 
         // breadth first search
-        mainLoop:
         while (!queue.isEmpty()) {
             int i = queue.remove(0);
             for (int j = 0; j < NUMBER_OF_CAVES; j++) {
