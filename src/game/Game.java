@@ -37,9 +37,17 @@ public class Game implements IConstants {
             printGameSummary();
 
 
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+        } catch (Exception e) {
+        	System.out.println("Oh no! A critical error has occured during runtime: " + e.getMessage());
+        	System.out.println("The system will now exit.");
+        	if(players.get(0) instanceof NetworkPlayer){
+        		players.get(0).feedBack(ERROR_FEEDBACK);
+        	}
+        }
+        finally{
+        	if(players.get(0) instanceof NetworkPlayer){
+        		players.get(0).feedBack(BYE_MESSAGE);
+        	}
         }
     }
 
@@ -157,7 +165,7 @@ public class Game implements IConstants {
         player.setLocation(nextCave);
     }
 
-    private static void init() throws IOException {
+    private static void init() throws IOException, InterruptedException {
         System.out.println("************************************"
                 + "\n*********WUMPUS SLAYER 2015*********"
                 + "\n************************************");
@@ -197,13 +205,10 @@ public class Game implements IConstants {
                 players.add(newNetPlayer);
 
                 isOverNetwork = true;
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            } catch (IOException | InterruptedException e) {
+                System.out.println("Error whilst trying to set up network connection!");
+                throw e;
+            } 
 
         } else {
             System.out.println("Would you like to add another player? (y/n)");
@@ -444,7 +449,6 @@ public class Game implements IConstants {
         dist[source] = 0;
         queue.add(source);
 
-        mainLoop:
         while (!queue.isEmpty()) {
             int i = queue.remove(0);
             for (int j = 0; j < NUMBER_OF_CAVES; j++) {
