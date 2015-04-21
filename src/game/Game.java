@@ -22,13 +22,15 @@ public class Game implements IConstants {
 			init();
 
 			gameFlow: while (true) {
-				if(isOverNetwork){
-					System.out.println(players.get(1).getInput("lol"));
+				if (isOverNetwork && enemyStatus==null) {
 					enemyStatus = players.get(1).getInput("status");
+					if (enemyStatus != null){
+						System.out.println(enemyStatus);
+					}
 				}
 				for (Player player : players) {
 					if (!(player instanceof NetworkPlayer)) {
-						
+
 						System.out.println();
 						if (players.size() > 1) {
 							System.out.println("It is " + player.toString()
@@ -44,30 +46,83 @@ public class Game implements IConstants {
 					}
 				}
 			}
+			
+			//Evaluate results for the race
 			if (isOverNetwork) {
-				players.get(1).feedBack(players.get(0).getMovesMade() + ";" + players.get(0).getExited() + ";");
-			}
-			System.out.print("Waiting for the opponent's status...");
-			while(enemyStatus==null){
-				System.out.println(players.get(1).getInput("lol"));
-				enemyStatus = players.get(1).getInput("status");
-				Thread.sleep(100);
-			}
+				players.get(1).feedBack(
+						players.get(0).getMovesMade() + ";"
+								+ players.get(0).getExited() + ";");
 
+				System.out.print("Waiting for the opponent's status...");
+				while (enemyStatus == null) {
+					enemyStatus = players.get(1).getInput("status");
+					System.out.println(enemyStatus);
+					Thread.sleep(100);
+				}
+
+				if (enemyStatus.contains(ERROR_FEEDBACK)) {
+					System.out
+							.println("The opponent has encountered an error whilst playing the game, so we will assume that you have won :)");
+				} else {
+					String[] statusParts = enemyStatus.split(";");
+
+					int opponentMoves = 0;
+					boolean opponentWon = false;
+					try {
+						opponentMoves = Integer.parseInt(statusParts[0]);
+
+						if (statusParts[1].equals("yes")) {
+							opponentWon = true;
+						} else if (statusParts[1].equals("no")) {
+							opponentWon = false;
+						} else {
+							throw new Exception();
+						}
+					}
+
+					catch (Exception e) {
+						System.out
+								.println("The opponent has sent an erroneous output!");
+					}
+					players.get(1).setExited(opponentWon);
+					players.get(1).setMovesMade(opponentMoves);
+					
+					if(players.get(0).getExited().equals("yes") && !opponentWon){
+						System.out.println("You won the race!");
+					}
+					else if (opponentWon && players.get(0).equals("no")) {
+						System.out.println("Your opponent has won the race!");
+					}
+					else if (opponentWon && players.get(0).equals("yes")){
+						if(opponentMoves < players.get(0).getMovesMade()){
+							System.out.println("Your opponent has won (he won in fewer moves)!");
+						}
+						else if (opponentMoves > players.get(0).getMovesMade()){
+							System.out.println("You won (you won in fewer moves)!");
+						}
+						else{
+							System.out.println("You tied!");
+						}
+					}
+					else{
+						System.out.println("You both lost!");
+					}
+
+				}
+			}
 			printGameSummary();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.printStackTrace();
-			System.out.println("Oh no! A critical error has occured during runtime: "
-					+ e.getMessage());
+			System.out
+					.println("Oh no! A critical error has occured during runtime: "
+							+ e.getMessage());
 			System.out.println("The system will now exit.");
 			if (isOverNetwork) {
 				players.get(1).feedBack(ERROR_FEEDBACK);
 			}
-		} 
-		
-		
+		}
+
 	}
 
 	/**
@@ -284,7 +339,7 @@ public class Game implements IConstants {
 					}
 				}
 			}
-			Thread.sleep(100);
+			Thread.sleep(150);
 
 		} else {
 			generateRandomGraph();
@@ -320,7 +375,7 @@ public class Game implements IConstants {
 
 				players.get(1).feedBack(caveFeedback);
 			}
-			Thread.sleep(100);
+			Thread.sleep(250);
 		}
 		for (Player player : players) {
 			dropPlayer(player);
