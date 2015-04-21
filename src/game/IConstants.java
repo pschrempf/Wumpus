@@ -1,7 +1,7 @@
 package game;
 
 /**
- * @author wumpus
+ * Interface containing the crucial constants for the game.
  */
 public interface IConstants {
     int NUMBER_OF_CAVES = 200;
