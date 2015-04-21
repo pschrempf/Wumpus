@@ -43,6 +43,10 @@ public abstract class Player implements IConstants {
 	public int getMovesMade() {
 		return movesMade;
 	}
+	
+	public void setMovesMade(int moves){
+		movesMade = moves;
+	}
 
 	public void incrementMovesMade() {
 		movesMade++;
