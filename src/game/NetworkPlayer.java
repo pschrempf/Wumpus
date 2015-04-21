@@ -13,8 +13,6 @@ package game;
 import java.io.*;
 import java.net.*;
 
-import com.sun.org.apache.regexp.internal.recompile;
-
 enum ChatState {
 	idle, // wait for session to be established
 	chatting // chat session in progress
@@ -263,7 +261,7 @@ public class NetworkPlayer extends Player implements IConstants {
 				if (l > 0)
 					line = new String(buffer, 0, l);
 			} catch (java.net.SocketTimeoutException e) {
-				return null;
+				//ignore
 			} catch (java.io.IOException e) {
 				String eName = e.getClass().getName();
 				if (eName != "java.io.InterruptedIOException") {

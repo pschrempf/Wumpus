@@ -4,17 +4,17 @@ package game;
  * Interface containing the crucial constants for the game.
  */
 public interface IConstants {
-    int NUMBER_OF_CAVES = 200;
+    int NUMBER_OF_CAVES = 20;
     int NUMBER_OF_BATS = 1;
     int NUMBER_OF_PITS = 5;
     int INITIAL_ARROWS = 3;
     
 	// network constants
     final static int chatPort = 48320; // the port number to be used
-    final static int soTimeout = 10; // ms to wait for socket read
+    final static int soTimeout = 500; // ms to wait for socket read
     final static int readRetry = 10; // # re-try of handshake
     final static int sleepTime = 200; // ms to sleep - 200 is fine
-    final static int bufferSize = 512; // # chars in line
+    final static int bufferSize = 8192; // # chars in line
     
 	// network messages
 	String COMMAND_FORFEIT = "you-win";
